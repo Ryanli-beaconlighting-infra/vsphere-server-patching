@@ -17,6 +17,7 @@ This workbook helps infrastructure teams:
 - **Priority-based scheduling** - Configurable days per priority level (30/60/90/120/180 days)
 - **Master server list** - Single source of truth for all server information
 - **Dropdown menus** - Consistent data entry with validation
+- **Clickable macro buttons** - One-click access to common actions
 - **VBA Macros** - Automation for quick updates and reporting
 - **Dashboard** - At-a-glance status overview
 
@@ -35,7 +36,27 @@ This workbook helps infrastructure teams:
 1. Open `Vsphere_Server_Patching_Schedule with macros.xlsm`
 2. Enable macros when prompted
 3. Go to **NextDC M1** sheet to view/update patching schedule
-4. Press `Alt+F8` to access automation macros
+4. Use the **clickable buttons** at the top of each sheet, or press `Alt+F8` for all macros
+
+## Macro Buttons
+
+The workbook includes clickable buttons for quick access to common macros:
+
+**Dashboard Sheet:**
+| Button | Action |
+|--------|--------|
+| Refresh Dashboard | Recalculate all data |
+| Show Overdue Servers | List overdue servers (copies to clipboard) |
+| Export Report | Generate printable status report |
+
+**NextDC M1 Sheet:**
+| Button | Action |
+|--------|--------|
+| Record Patch Date | Record today's date for selected server |
+| Quick Patch Multiple | Bulk update multiple servers |
+| Generate Email List | Create server list for notifications (copies to clipboard) |
+| Show Overdue | List all overdue servers |
+| Refresh Dashboard | Recalculate and go to Dashboard |
 
 ## Available Macros
 

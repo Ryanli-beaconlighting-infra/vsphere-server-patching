@@ -93,6 +93,7 @@ This workbook is the central system for tracking server patching schedules acros
 - **Priority-based scheduling** (configurable days per priority)
 - **Master server list** as single source of truth
 - **Dropdown menus** for consistent data entry
+- **Clickable macro buttons** for one-click automation
 - **Automation macros** for quick updates
 - **Dashboard** for at-a-glance status overview
 - **Unlimited patch history** tracking
@@ -561,16 +562,37 @@ If macros won't run, check Excel's security settings:
 
 ### 7.3 How to Run Macros
 
-#### Method 1: Macro Dialog (Recommended)
+#### Method 1: Clickable Buttons (Recommended)
+The workbook includes clickable buttons at the top of each sheet for quick access to the most common macros.
+
+**Dashboard Buttons:**
+| Button | Action |
+|--------|--------|
+| Refresh Dashboard | Recalculate all data |
+| Show Overdue Servers | List overdue servers (copies to clipboard) |
+| Export Report | Generate printable status report |
+
+**NextDC M1 Buttons:**
+| Button | Action |
+|--------|--------|
+| Record Patch Date | Record today's date for selected server |
+| Quick Patch Multiple | Bulk update multiple servers |
+| Generate Email List | Create server list for notifications (copies to clipboard) |
+| Show Overdue | List all overdue servers |
+| Refresh Dashboard | Recalculate and go to Dashboard |
+
+Simply click the button to run the macro!
+
+#### Method 2: Macro Dialog (Alt+F8)
 1. Press `Alt+F8`
 2. Select the macro name from the list
 3. Click "Run"
 
-#### Method 2: Developer Tab (if enabled)
+#### Method 3: Developer Tab (if enabled)
 1. Click Developer tab > Macros
 2. Select macro and click Run
 
-#### Method 3: Keyboard Shortcut (if configured)
+#### Method 4: Keyboard Shortcut (if configured)
 - Can assign custom shortcuts via Options
 
 [Back to Top](#table-of-contents)

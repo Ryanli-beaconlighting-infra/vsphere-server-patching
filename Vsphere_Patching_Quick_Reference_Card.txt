@@ -3,14 +3,21 @@
 |                         (Print and keep at your desk)                        |
 +==============================================================================+
 
++------------------------------------------------------------------------------+
+|                         MACRO BUTTONS (NEW!)                                 |
++------------------------------------------------------------------------------+
+|  Dashboard: [Refresh Dashboard] [Show Overdue Servers] [Export Report]       |
+|  NextDC M1: [Record Patch Date] [Quick Patch Multiple] [Generate Email List] |
+|             [Show Overdue] [Refresh Dashboard]                               |
++------------------------------------------------------------------------------+
+
 +----------------------------------+-------------------------------------------+
 |  RECORDING A PATCH (Quick)       |  RECORDING MULTIPLE PATCHES               |
 +----------------------------------+-------------------------------------------+
 |  1. Go to "NextDC M1" sheet      |  1. Go to "NextDC M1" sheet               |
 |  2. Click the server's row       |  2. Ctrl+Click multiple server rows       |
-|  3. Press Alt+F8                 |  3. Press Alt+F8                          |
-|  4. Select "RecordPatchDate"     |  4. Select "QuickPatchMultiple"           |
-|  5. Click Run > Yes              |  5. Click Run > Yes                       |
+|  3. Click [Record Patch Date]    |  3. Click [Quick Patch Multiple]          |
+|  4. Click Yes to confirm         |  4. Click Yes to confirm                  |
 +----------------------------------+-------------------------------------------+
 
 +------------------------------------------------------------------------------+
