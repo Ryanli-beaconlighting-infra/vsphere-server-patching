@@ -26,7 +26,7 @@ This workbook helps infrastructure teams:
 |------|-------------|
 | `Vsphere_Server_Patching_Schedule.xlsx` | Main workbook |
 | `Vsphere_Server_Patching_Schedule with macros.xlsm` | Macro-enabled version |
-| `Vsphere_Patching_Complete_User_Guide.txt` | Comprehensive documentation |
+| [`Vsphere_Patching_Complete_User_Guide.md`](Vsphere_Patching_Complete_User_Guide.md) | Comprehensive documentation (with clickable navigation) |
 | `Vsphere_Patching_Quick_Reference_Card.txt` | Printable desk reference |
 | `Vsphere_Patching_Macros_UPDATED.bas` | VBA code for macro import |
 
@@ -67,7 +67,7 @@ This workbook helps infrastructure teams:
 
 ## Documentation
 
-See `Vsphere_Patching_Complete_User_Guide.txt` for full documentation including:
+See [`Vsphere_Patching_Complete_User_Guide.md`](Vsphere_Patching_Complete_User_Guide.md) for full documentation including:
 - Detailed sheet explanations
 - Step-by-step task guides
 - Macro setup and usage
