@@ -143,6 +143,7 @@ End Sub
 
 Sub ShowOverdueServers()
     ' Displays a list of all servers with OVERDUE status
+    ' Text is automatically copied to clipboard for pasting
     ' Usage: Run from any sheet
 
     Dim ws As Worksheet
@@ -151,6 +152,8 @@ Sub ShowOverdueServers()
     Dim overdueCount As Integer
     Dim nextDueDate As Variant
     Dim daysOverdue As Long
+    Dim clipboardText As String
+    Dim DataObj As Object
 
     Set ws = ThisWorkbook.Sheets("NextDC M1")
 
@@ -182,13 +185,27 @@ Sub ShowOverdueServers()
         MsgBox "No overdue servers found!" & vbCrLf & vbCrLf & _
                "All patching is on schedule.", vbInformation, "Overdue Check - All Clear"
     Else
+        ' Build clipboard text
+        clipboardText = "OVERDUE SERVERS (" & overdueCount & "):" & vbCrLf & vbCrLf & overdueList
+
+        ' Copy to clipboard
+        On Error Resume Next
+        Set DataObj = CreateObject("New:{1C3B4210-F441-11CE-B9EA-00AA006B1A69}")
+        DataObj.SetText clipboardText
+        DataObj.PutInClipboard
+        Set DataObj = Nothing
+        On Error GoTo 0
+
         MsgBox "OVERDUE SERVERS (" & overdueCount & "):" & vbCrLf & vbCrLf & _
-               overdueList, vbExclamation, "Overdue Servers Found"
+               overdueList & vbCrLf & _
+               ">>> TEXT COPIED TO CLIPBOARD - Press Ctrl+V to paste <<<", _
+               vbExclamation, "Overdue Servers Found"
     End If
 End Sub
 
 Sub GenerateEmailList()
     ' Creates a list of selected servers for email notification
+    ' Text is automatically copied to clipboard for pasting
     ' Usage: Select server rows on NextDC M1, then run this macro
 
     Dim ws As Worksheet
@@ -201,6 +218,8 @@ Sub GenerateEmailList()
     Dim i As Long
     Dim team As String
     Dim teamList As String
+    Dim clipboardText As String
+    Dim DataObj As Object
 
     Set ws = ThisWorkbook.Sheets("NextDC M1")
 
@@ -254,16 +273,27 @@ Sub GenerateEmailList()
         teamList = Left(teamList, Len(teamList) - 2)
     End If
 
-    ' Display the list
+    ' Build the text for display and clipboard
     Dim msg As String
     msg = "SERVERS TO BE PATCHED (" & serverCount & "):" & vbCrLf & vbCrLf
-    msg = msg & serverList & vbCrLf
+    msg = msg & serverList
     If teamList <> "" Then
-        msg = msg & "TEAMS TO NOTIFY: " & teamList & vbCrLf
+        msg = msg & vbCrLf & "TEAMS TO NOTIFY: " & teamList
     End If
-    msg = msg & vbCrLf & "Tip: Copy this list into your email notification."
 
-    MsgBox msg, vbInformation, "Server List for Email"
+    ' Copy to clipboard
+    clipboardText = msg
+    On Error Resume Next
+    Set DataObj = CreateObject("New:{1C3B4210-F441-11CE-B9EA-00AA006B1A69}")
+    DataObj.SetText clipboardText
+    DataObj.PutInClipboard
+    Set DataObj = Nothing
+    On Error GoTo 0
+
+    ' Display with clipboard confirmation
+    MsgBox msg & vbCrLf & vbCrLf & _
+           ">>> TEXT COPIED TO CLIPBOARD - Press Ctrl+V to paste <<<", _
+           vbInformation, "Server List for Email"
 End Sub
 
 Sub ExportPatchReport()
