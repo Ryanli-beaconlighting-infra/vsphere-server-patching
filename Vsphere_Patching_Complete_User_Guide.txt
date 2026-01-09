@@ -118,7 +118,7 @@ Macro-Enabled Version:
 
 Supporting Files:
   - Vsphere_Patching_Macros_UPDATED.bas (VBA code for macros)
-  - Vsphere_Patching_Quick_Reference.txt (printable quick reference)
+  - Vsphere_Patching_Quick_Reference_Card.txt (printable quick reference)
   - This guide (Vsphere_Patching_Complete_User_Guide.txt)
 
 
@@ -648,11 +648,14 @@ HOW TO USE:
   1. Press Alt+F8 > select "ShowOverdueServers" > Run
   2. A message box appears listing all overdue servers
   3. Shows server name, due date, and days overdue
+  4. Click OK - text is automatically copied to clipboard
+  5. Press Ctrl+V to paste the list anywhere (email, document, etc.)
 
 WHAT IT DOES:
   - Scans all servers in NextDC M1
   - Finds those with "OVERDUE" status
   - Displays formatted list with details
+  - AUTO-COPIES text to clipboard for easy pasting
 
 WHEN TO USE:
   - At the start of your day to plan patching
@@ -669,12 +672,14 @@ HOW TO USE:
   2. Select the rows of servers you're about to patch
   3. Press Alt+F8 > select "GenerateEmailList" > Run
   4. A message box appears with the server list
-  5. Copy the text and paste into your email
+  5. Click OK - text is automatically copied to clipboard
+  6. Press Ctrl+V to paste directly into your email
 
 WHAT IT DOES:
   - Lists all selected servers
   - Shows associated teams (from Master Servers)
   - Formats for easy copying
+  - AUTO-COPIES text to clipboard for easy pasting
 
 WHEN TO USE:
   - Before sending maintenance notifications
@@ -857,10 +862,11 @@ Scenario: You're about to patch 5 servers and need to notify teams
   3. Press Alt+F8
   4. Select "GenerateEmailList"
   5. Click Run
-  6. Copy the server list from the message box
-  7. Paste into your email template
-  8. Add date/time of maintenance
-  9. Send to appropriate teams
+  6. Review the server list in the message box
+  7. Click OK (text is automatically copied to clipboard)
+  8. Open your email and press Ctrl+V to paste the list
+  9. Add date/time of maintenance
+  10. Send to appropriate teams
 
 
 ================================================================================

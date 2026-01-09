@@ -43,10 +43,12 @@ This workbook helps infrastructure teams:
 |-------|---------|
 | `RecordPatchDate` | Record today's date for selected server |
 | `QuickPatchMultiple` | Bulk update multiple servers at once |
-| `ShowOverdueServers` | List all servers needing patching |
-| `GenerateEmailList` | Create server list for notifications |
+| `ShowOverdueServers` | List all overdue servers (auto-copies to clipboard) |
+| `GenerateEmailList` | Create server list for notifications (auto-copies to clipboard) |
 | `ExportPatchReport` | Generate printable status report |
 | `RefreshDashboard` | Recalculate all data |
+
+> **Tip:** ShowOverdueServers and GenerateEmailList automatically copy text to your clipboard. Just click OK and press `Ctrl+V` to paste.
 
 ## Sheet Structure
 
@@ -73,8 +75,21 @@ See `Vsphere_Patching_Complete_User_Guide.txt` for full documentation including:
 
 ## Requirements
 
-- Microsoft Excel 2016 or later
+- Microsoft Excel 2016 or later (desktop app recommended)
 - Macros enabled for automation features
+
+## Excel Online (Web Browser) Compatibility
+
+| Feature | Works in Browser? |
+|---------|-------------------|
+| Viewing data | ✅ Yes |
+| Editing cells | ✅ Yes |
+| Formulas & calculations | ✅ Yes |
+| Dropdowns | ✅ Yes |
+| Status colors | ✅ Yes |
+| **VBA Macros** | ❌ No - requires desktop Excel |
+
+For full functionality including macros, use the desktop Excel application.
 
 ## License
 

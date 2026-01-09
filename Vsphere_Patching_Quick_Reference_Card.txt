@@ -18,10 +18,12 @@
 +------------------------------------------------------------------------------+
 |  RecordPatchDate      |  Record patch for ONE selected server                |
 |  QuickPatchMultiple   |  Record patch for MULTIPLE selected servers          |
-|  ShowOverdueServers   |  List all servers needing patching                   |
-|  GenerateEmailList    |  Create server list for email notifications          |
+|  ShowOverdueServers   |  List all overdue servers *                          |
+|  GenerateEmailList    |  Create server list for emails *                     |
 |  ExportPatchReport    |  Generate printable status report                    |
 |  RefreshDashboard     |  Recalculate all data and show dashboard             |
++------------------------------------------------------------------------------+
+|  * Auto-copies to clipboard - click OK then press Ctrl+V to paste            |
 +------------------------------------------------------------------------------+
 
 +------------------------------------------------------------------------------+
