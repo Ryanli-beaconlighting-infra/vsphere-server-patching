@@ -1,0 +1,1027 @@
+################################################################################
+#                                                                              #
+#          VSPHERE SERVER PATCHING SCHEDULE - COMPLETE USER GUIDE              #
+#                                                                              #
+#                    Beacon Lighting Infrastructure Team                       #
+#                           Last Updated: January 2026                         #
+#                                                                              #
+################################################################################
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+
+    1.  INTRODUCTION
+        1.1  Purpose of This Workbook
+        1.2  Key Features
+        1.3  File Location
+
+    2.  WORKBOOK OVERVIEW
+        2.1  Sheet Structure
+        2.2  How the Sheets Work Together
+        2.3  Color Coding Guide
+
+    3.  DASHBOARD SHEET
+        3.1  Purpose
+        3.2  Sections Explained
+        3.3  How to Use
+
+    4.  SETTINGS SHEET
+        4.1  Purpose
+        4.2  Priority Table
+        4.3  Cluster List
+        4.4  Team List
+        4.5  How to Modify Settings
+
+    5.  MASTER SERVERS SHEET
+        5.1  Purpose
+        5.2  Column Descriptions
+        5.3  Adding a New Server
+        5.4  Decommissioning a Server
+        5.5  Changing Server Details
+
+    6.  NEXTDC M1 SHEET (Main Patching Schedule)
+        6.1  Purpose
+        6.2  Column Descriptions
+        6.3  Understanding Status Values
+        6.4  Recording a Patch (Manual Method)
+        6.5  Using Dropdowns
+
+    7.  MACROS - AUTOMATION TOOLS
+        7.1  What Are Macros?
+        7.2  One-Time Setup (Installing Macros)
+        7.3  How to Run Macros
+        7.4  Available Macros
+            7.4.1  RecordPatchDate
+            7.4.2  QuickPatchMultiple
+            7.4.3  ShowOverdueServers
+            7.4.4  GenerateEmailList
+            7.4.5  ExportPatchReport
+            7.4.6  RefreshDashboard
+
+    8.  COMMON TASKS - STEP BY STEP
+        8.1  Recording a Single Patch
+        8.2  Recording Multiple Patches (Bulk)
+        8.3  Adding a New Server to the System
+        8.4  Checking Which Servers Are Overdue
+        8.5  Changing a Server's Priority
+        8.6  Generating a Report
+        8.7  Sending Patch Notifications
+
+    9.  TROUBLESHOOTING
+        9.1  Common Issues and Solutions
+        9.2  Formula Errors
+        9.3  Dropdown Issues
+        9.4  Macro Issues
+
+   10.  APPENDIX
+        10.1  Named Ranges Reference
+        10.2  Formula Reference
+        10.3  Keyboard Shortcuts
+
+
+================================================================================
+                            1. INTRODUCTION
+================================================================================
+
+1.1 PURPOSE OF THIS WORKBOOK
+----------------------------
+This workbook is the central system for tracking server patching schedules
+across our vSphere infrastructure. It helps the team:
+
+  - Know which servers need patching and when
+  - Track patch history for compliance and auditing
+  - Identify overdue servers at a glance
+  - Maintain consistent patching cycles based on server priority
+  - Generate reports for management and compliance
+
+
+1.2 KEY FEATURES
+----------------
+  * Automatic status calculation (OK, OVERDUE, UNSCHEDULED)
+  * Priority-based scheduling (configurable days per priority)
+  * Master server list as single source of truth
+  * Dropdown menus for consistent data entry
+  * Automation macros for quick updates
+  * Dashboard for at-a-glance status overview
+  * Unlimited patch history tracking
+
+
+1.3 FILE LOCATION
+-----------------
+Primary File:
+  OneDrive - Beacon Lighting\projects\vsphere-server-patching\
+  Vsphere_Server_Patching_Schedule.xlsx
+
+Macro-Enabled Version:
+  Vsphere_Server_Patching_Schedule with macros.xlsm
+
+Supporting Files:
+  - Vsphere_Patching_Macros_UPDATED.bas (VBA code for macros)
+  - Vsphere_Patching_Quick_Reference.txt (printable quick reference)
+  - This guide (Vsphere_Patching_Complete_User_Guide.txt)
+
+
+================================================================================
+                          2. WORKBOOK OVERVIEW
+================================================================================
+
+2.1 SHEET STRUCTURE
+-------------------
+The workbook contains the following sheets (tabs at bottom of Excel):
+
+  +-------------+--------------------------------------------------+
+  | Sheet Name  | Purpose                                          |
+  +-------------+--------------------------------------------------+
+  | Dashboard   | Overview of patching status, quick stats         |
+  | Settings    | Configure priorities, clusters, teams            |
+  | Master      | Central list of all servers (source of truth)    |
+  | Servers     |                                                  |
+  | NextDC M1   | Main patching schedule and history tracking      |
+  | Server list | Legacy/reference list (may contain app owners)   |
+  | Applications| Application reference data                       |
+  +-------------+--------------------------------------------------+
+
+
+2.2 HOW THE SHEETS WORK TOGETHER
+--------------------------------
+
+                    +------------+
+                    |  Settings  |
+                    +------------+
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+    +-----------+  +-----------+  +-----------+
+    | Priority  |  | Cluster   |  | Team      |
+    | Table     |  | List      |  | List      |
+    +-----------+  +-----------+  +-----------+
+          |              |              |
+          |              v              |
+          |     +---------------+       |
+          +---->| Master Servers|<------+
+                +---------------+
+                       |
+                       | (Server names, priorities, status)
+                       v
+                +---------------+
+                |   NextDC M1   |  <-- Main working sheet
+                +---------------+
+                       |
+                       | (Statistics & counts)
+                       v
+                +---------------+
+                |   Dashboard   |
+                +---------------+
+
+  Flow explanation:
+  1. Settings defines the priority cycles (30/60/90 days)
+  2. Master Servers holds all server details
+  3. NextDC M1 pulls server info from Master and calculates due dates
+  4. Dashboard summarizes the status from NextDC M1
+
+
+2.3 COLOR CODING GUIDE
+----------------------
+
+  STATUS COLORS (NextDC M1 Column E):
+  +---------------+--------+------------------------------------------+
+  | Color         | Status | Meaning                                  |
+  +---------------+--------+------------------------------------------+
+  | RED           | OVERDUE| Server is past its scheduled patch date  |
+  |               |        | ACTION REQUIRED: Patch ASAP              |
+  +---------------+--------+------------------------------------------+
+  | GREEN         | OK     | Server is within its patching schedule   |
+  |               |        | No action needed                         |
+  +---------------+--------+------------------------------------------+
+  | GREY          | UNSCHED| Server has no priority set or no patch   |
+  |               | ULED   | history. Needs to be configured.         |
+  +---------------+--------+------------------------------------------+
+
+  SETTINGS SHEET COLORS:
+  +---------------+--------------------------------------------------+
+  | Color         | Meaning                                          |
+  +---------------+--------------------------------------------------+
+  | BLUE Header   | Section title - do not edit                      |
+  | LIGHT BLUE    | Column headers - do not edit                     |
+  | GREEN cells   | Editable cells - you can change these values     |
+  | WHITE cells   | Data cells or calculated values                  |
+  +---------------+--------------------------------------------------+
+
+  MASTER SERVERS STATUS:
+  +---------------+--------------------------------------------------+
+  | Status        | Meaning                                          |
+  +---------------+--------------------------------------------------+
+  | Active        | Server is in production, requires patching       |
+  | Decommissioned| Server is retired, shown with strikethrough      |
+  | Pending       | Server is being set up, not yet in schedule      |
+  +---------------+--------------------------------------------------+
+
+
+================================================================================
+                          3. DASHBOARD SHEET
+================================================================================
+
+3.1 PURPOSE
+-----------
+The Dashboard provides a quick overview of the entire patching status.
+Use this sheet to:
+  - See total server counts and status breakdown
+  - Check how many servers are overdue
+  - View current patching cycle settings
+  - Access quick reference for macros
+
+
+3.2 SECTIONS EXPLAINED
+----------------------
+
+PATCHING STATUS OVERVIEW (Rows 4-8)
+  Shows counts for each status type:
+  - Total Servers: All servers in NextDC M1
+  - OVERDUE: Servers needing immediate attention (red)
+  - OK: Servers within schedule (green)
+  - UNSCHEDULED: Servers without priority/history (grey)
+
+BY PRIORITY (Rows 11-15)
+  Breaks down server counts by priority level:
+  - How many servers in each priority
+  - How many are overdue per priority
+  Helps identify which priority group needs most attention.
+
+CURRENT PATCHING CYCLES (Rows 17-21)
+  Shows the current day settings for each priority:
+  - Priority 1 (Critical): XX days
+  - Priority 2 (Medium): XX days
+  - Priority 3 (Low/Dev): XX days
+  These values come from the Settings sheet.
+
+QUICK ACTIONS (Rows 23-29)
+  Reference list of available macros and what they do.
+  Press Alt+F8 to access these macros.
+
+MASTER SERVER INVENTORY (Rows 32-36)
+  Shows counts from the Master Servers sheet:
+  - Total Servers: All servers in master list
+  - Active: Servers requiring patching
+  - Decommissioned: Retired servers
+  - Pending: Servers being set up
+
+PRIORITY SYSTEM (Rows 38-40)
+  Shows number of active priority levels.
+  Indicates where to add new priorities.
+
+
+3.3 HOW TO USE
+--------------
+The Dashboard is primarily for viewing, not editing.
+All values update automatically when data changes in other sheets.
+
+To refresh the Dashboard:
+  1. Press Alt+F8
+  2. Select "RefreshDashboard"
+  3. Click Run
+
+Or simply press F9 to recalculate all formulas.
+
+
+================================================================================
+                          4. SETTINGS SHEET
+================================================================================
+
+4.1 PURPOSE
+-----------
+The Settings sheet is where you configure the core parameters that control
+how the patching schedule works. Changes here affect the entire workbook.
+
+
+4.2 PRIORITY TABLE (Rows 4-9)
+-----------------------------
+This table defines how often each priority level requires patching.
+
+  +----------+------+-------------+-------------------+
+  | Priority | Days | Description | Server Types      |
+  +----------+------+-------------+-------------------+
+  | 1        | 30   | Critical    | Production, DC    |
+  | 2        | 60   | Medium      | Standard servers  |
+  | 3        | 90   | Low/Dev     | Dev, Test, DR     |
+  | 4        | 120  | Extended    | Archive, Backup   |
+  | 5        | 180  | Long-term   | Rarely changed    |
+  +----------+------+-------------+-------------------+
+
+  Column A: Priority number (1, 2, 3, etc.)
+  Column B: Days between patches (EDITABLE - green cells)
+  Column C: Description of the priority level
+  Column D: Typical server types for this priority
+
+TO CHANGE PATCHING FREQUENCY:
+  1. Find the priority row you want to change
+  2. Edit the "Days" column (green cell)
+  3. All servers with that priority will automatically recalculate
+
+TO ADD A NEW PRIORITY:
+  1. Add a new row below existing priorities (e.g., row 10)
+  2. Enter: Priority number, Days, Description, Server Types
+  3. Update the PriorityList named range if needed
+     (Formulas > Name Manager > PriorityList)
+
+
+4.3 CLUSTER LIST (Rows 13-18)
+-----------------------------
+Defines the available clusters for the dropdown in Master Servers.
+
+  Current clusters:
+  - NextDC M1 (Primary datacenter)
+  - Cluster 2 (Secondary)
+  - Cluster 3 (Development)
+  - Cluster 4 (DR/Backup)
+
+TO ADD A CLUSTER:
+  1. Add cluster name in the next empty row
+  2. Update ClusterList named range if needed
+
+
+4.4 TEAM LIST (Rows 21-26)
+--------------------------
+Defines the team names for assignment in Master Servers.
+
+  Current teams:
+  - Team 1
+  - Team 2
+  - Team 3
+  - Infrastructure
+
+TO ADD A TEAM:
+  1. Add team name in the next empty row
+  2. Update TeamList named range if needed
+
+
+4.5 HOW TO MODIFY SETTINGS
+--------------------------
+
+IMPORTANT: Only edit the GREEN cells. Other cells contain formulas
+or are used by the system.
+
+Changes take effect immediately - all formulas recalculate automatically.
+
+Example: Changing Priority 1 from 30 days to 21 days:
+  1. Go to Settings sheet
+  2. Find Priority 1 row (row 5)
+  3. Change cell B5 from "30" to "21"
+  4. All Priority 1 servers now have 21-day cycles
+
+
+================================================================================
+                       5. MASTER SERVERS SHEET
+================================================================================
+
+5.1 PURPOSE
+-----------
+The Master Servers sheet is the SINGLE SOURCE OF TRUTH for all server
+information. When you add, modify, or decommission a server, do it here.
+
+All other sheets reference this data.
+
+
+5.2 COLUMN DESCRIPTIONS
+-----------------------
+
+  +--------+---------------+-------------------------------------------+
+  | Column | Header        | Description                               |
+  +--------+---------------+-------------------------------------------+
+  | A      | Server Name   | The server/VM name (unique identifier)    |
+  | B      | Cluster       | Which cluster the server belongs to       |
+  |        |               | (dropdown from Settings)                  |
+  | C      | Priority      | Patching priority 1-5 (dropdown)          |
+  | D      | Team          | Responsible team (dropdown from Settings) |
+  | E      | Status        | Active, Decommissioned, or Pending        |
+  | F      | Notes         | Any additional information                |
+  +--------+---------------+-------------------------------------------+
+
+Row 1-4: Headers and instructions
+Row 5+: Server data
+
+
+5.3 ADDING A NEW SERVER
+-----------------------
+ALWAYS add new servers here FIRST, then they appear in NextDC M1.
+
+Step-by-step:
+  1. Go to Master Servers sheet
+  2. Find the first empty row (after existing servers)
+  3. Enter the server details:
+     - Column A: Server name (type exactly as it appears in vSphere)
+     - Column B: Select cluster from dropdown
+     - Column C: Select priority (1-5) from dropdown
+     - Column D: Select team from dropdown
+     - Column E: Set to "Active"
+     - Column F: Add any notes (optional)
+  4. Go to NextDC M1 sheet
+  5. In the next empty row, Column A, use dropdown to select new server
+  6. Priority and other fields auto-populate
+
+
+5.4 DECOMMISSIONING A SERVER
+----------------------------
+When a server is retired, don't delete it - mark it as decommissioned.
+This preserves history for auditing.
+
+Step-by-step:
+  1. Go to Master Servers sheet
+  2. Find the server row
+  3. Change Column E (Status) to "Decommissioned"
+  4. The server will show with strikethrough formatting
+  5. It remains in NextDC M1 but is visually marked as inactive
+
+
+5.5 CHANGING SERVER DETAILS
+---------------------------
+To change cluster, priority, or team:
+  1. Go to Master Servers sheet
+  2. Find the server
+  3. Use the dropdown to select new value
+  4. Changes automatically reflect in NextDC M1
+
+
+================================================================================
+                  6. NEXTDC M1 SHEET (Main Patching Schedule)
+================================================================================
+
+6.1 PURPOSE
+-----------
+This is your PRIMARY WORKING SHEET for day-to-day patching operations.
+Here you:
+  - See which servers need patching
+  - Record patch dates after patching
+  - Track patch history
+  - Monitor status of all servers
+
+
+6.2 COLUMN DESCRIPTIONS
+-----------------------
+
+  +--------+-----------------+-------------------------------------------+
+  | Column | Header          | Description                               |
+  +--------+-----------------+-------------------------------------------+
+  | A      | Server/VM Name  | Server name (dropdown from Master)        |
+  | B      | Priority        | Auto-filled from Master Servers           |
+  | C      | Next Scheduled  | Calculated: Last Patch + Priority Days    |
+  |        | Date            |                                           |
+  | D      | Last Patch Date | Calculated: Most recent date from history |
+  | E      | Status          | Calculated: OK, OVERDUE, or UNSCHEDULED   |
+  | F      | Days Until Due  | Calculated: Days until next patch due     |
+  | G      | Master Status   | Shows Active/Decommissioned from Master   |
+  | H      | Notes           | Manual notes field                        |
+  | I+     | Patch History   | Date columns - add new dates here         |
+  +--------+-----------------+-------------------------------------------+
+
+COLUMNS A-G: Mostly automatic (formulas) - don't edit directly
+COLUMN H: Manual notes - you can edit
+COLUMNS I onwards: PATCH HISTORY - this is where you record dates
+
+
+6.3 UNDERSTANDING STATUS VALUES
+-------------------------------
+
+OVERDUE (Red background)
+  - The "Next Scheduled Date" is in the past
+  - Action: This server needs patching immediately
+  - The "Days Until Due" shows negative number (days overdue)
+
+OK (Green background)
+  - The server was patched and next date is in the future
+  - Action: No action needed until due date approaches
+  - The "Days Until Due" shows positive number
+
+UNSCHEDULED (Grey background)
+  - Either: No priority assigned, OR no patch history recorded
+  - Action: Either assign priority in Master Servers, or record first patch
+  - The "Days Until Due" shows "N/A"
+
+
+6.4 RECORDING A PATCH (Manual Method)
+-------------------------------------
+After patching a server:
+
+  1. Find the server's row in NextDC M1
+  2. Scroll right to find the first empty column after column H
+  3. Enter today's date in format: DD/MM/YYYY
+  4. Press Enter
+  5. The formulas automatically:
+     - Update "Last Patch Date" to your new date
+     - Recalculate "Next Scheduled Date"
+     - Change "Status" to OK (if not overdue)
+     - Update "Days Until Due"
+
+TIP: Use the RecordPatchDate macro instead (see Section 7)
+
+
+6.5 USING DROPDOWNS
+-------------------
+
+Server Name (Column A):
+  - Click the cell, then click the dropdown arrow
+  - Select from list of servers defined in Master Servers
+  - Only "Active" servers appear in main list
+
+Priority (Column B):
+  - Automatically filled based on Master Servers
+  - If you need to override, use dropdown (1-5)
+  - Better to change in Master Servers for consistency
+
+
+================================================================================
+                      7. MACROS - AUTOMATION TOOLS
+================================================================================
+
+7.1 WHAT ARE MACROS?
+--------------------
+Macros are automated scripts that perform tasks with a single click.
+Instead of manually finding columns and entering dates, macros do it
+for you instantly.
+
+Benefits:
+  - Faster data entry
+  - Fewer errors
+  - Consistent formatting
+  - Bulk operations
+
+
+7.2 ONE-TIME SETUP (Installing Macros)
+--------------------------------------
+Each team member needs to do this ONCE to enable macros.
+
+OPTION A: Use the Macro-Enabled Workbook
+  1. Open: Vsphere_Server_Patching_Schedule with macros.xlsm
+  2. If prompted, click "Enable Macros"
+  3. Done! Macros are ready to use.
+
+OPTION B: Import Macros Manually (if using .xlsx version)
+  1. Open the patching workbook (.xlsx)
+  2. Open file: Vsphere_Patching_Macros_UPDATED.bas with Notepad
+  3. Select all text (Ctrl+A) and copy (Ctrl+C)
+  4. In Excel, press Alt+F11 to open VBA Editor
+  5. Click: Insert menu > Module
+  6. Paste the code (Ctrl+V) into the white area
+  7. Press Alt+Q to close VBA Editor
+  8. Save As: Excel Macro-Enabled Workbook (.xlsm)
+
+ENABLING MACROS IN EXCEL SETTINGS:
+  If macros won't run, check Excel's security settings:
+  1. File > Options > Trust Center > Trust Center Settings
+  2. Click "Macro Settings"
+  3. Select "Enable all macros" or "Disable with notification"
+  4. Click OK and restart Excel
+
+
+7.3 HOW TO RUN MACROS
+---------------------
+
+Method 1: Macro Dialog (Recommended)
+  1. Press Alt+F8
+  2. Select the macro name from the list
+  3. Click "Run"
+
+Method 2: Developer Tab (if enabled)
+  1. Click Developer tab > Macros
+  2. Select macro and click Run
+
+Method 3: Keyboard Shortcut (if configured)
+  - Can assign custom shortcuts via Options
+
+
+7.4 AVAILABLE MACROS
+--------------------
+
+7.4.1 RecordPatchDate
+---------------------
+PURPOSE: Record today's date as a patch for ONE server
+
+HOW TO USE:
+  1. Go to NextDC M1 sheet
+  2. Click anywhere on the row of the server you just patched
+  3. Press Alt+F8 > select "RecordPatchDate" > Run
+  4. A confirmation dialog appears showing the server name
+  5. Click "Yes" to confirm
+  6. The date is recorded in the next available history column
+
+WHAT IT DOES:
+  - Finds the selected server row
+  - Finds the first empty column in patch history (column I onwards)
+  - Enters today's date with DD/MM/YYYY format
+  - Displays confirmation message
+
+WHEN TO USE:
+  - After patching a single server
+  - Fastest way to record one patch
+
+
+7.4.2 QuickPatchMultiple
+------------------------
+PURPOSE: Record today's date for MULTIPLE servers at once
+
+HOW TO USE:
+  1. Go to NextDC M1 sheet
+  2. Select multiple rows:
+     - Hold Ctrl and click each row, OR
+     - Click first row, hold Shift, click last row (for range)
+  3. Press Alt+F8 > select "QuickPatchMultiple" > Run
+  4. Review the list of servers in the confirmation dialog
+  5. Click "Yes" to confirm
+  6. All selected servers get today's date recorded
+
+WHAT IT DOES:
+  - Loops through all selected rows
+  - For each valid server, records today's date
+  - Shows count of servers updated
+
+WHEN TO USE:
+  - After a bulk patching session
+  - When you've patched multiple servers in one maintenance window
+
+
+7.4.3 ShowOverdueServers
+------------------------
+PURPOSE: Display a list of all servers that are currently OVERDUE
+
+HOW TO USE:
+  1. Press Alt+F8 > select "ShowOverdueServers" > Run
+  2. A message box appears listing all overdue servers
+  3. Shows server name, due date, and days overdue
+
+WHAT IT DOES:
+  - Scans all servers in NextDC M1
+  - Finds those with "OVERDUE" status
+  - Displays formatted list with details
+
+WHEN TO USE:
+  - At the start of your day to plan patching
+  - Before maintenance windows
+  - Weekly status checks
+
+
+7.4.4 GenerateEmailList
+-----------------------
+PURPOSE: Create a list of servers for email notifications
+
+HOW TO USE:
+  1. Go to NextDC M1 sheet
+  2. Select the rows of servers you're about to patch
+  3. Press Alt+F8 > select "GenerateEmailList" > Run
+  4. A message box appears with the server list
+  5. Copy the text and paste into your email
+
+WHAT IT DOES:
+  - Lists all selected servers
+  - Shows associated teams (from Master Servers)
+  - Formats for easy copying
+
+WHEN TO USE:
+  - Before sending maintenance notifications
+  - When preparing change requests
+
+
+7.4.5 ExportPatchReport
+-----------------------
+PURPOSE: Generate a printable status report
+
+HOW TO USE:
+  1. Press Alt+F8 > select "ExportPatchReport" > Run
+  2. Click "Yes" to confirm
+  3. A new "Patch Report" sheet is created
+  4. The report is formatted and ready to print
+
+WHAT IT DOES:
+  - Creates a new sheet called "Patch Report"
+  - Lists all servers with current status
+  - Color-codes by status
+  - Includes summary statistics
+  - Adds generation timestamp
+
+WHEN TO USE:
+  - Weekly/monthly reporting
+  - Management updates
+  - Compliance audits
+  - Printing for meetings
+
+
+7.4.6 RefreshDashboard
+----------------------
+PURPOSE: Recalculate all formulas and show Dashboard
+
+HOW TO USE:
+  1. Press Alt+F8 > select "RefreshDashboard" > Run
+  2. Dashboard sheet activates with updated values
+
+WHAT IT DOES:
+  - Forces recalculation of all formulas
+  - Switches to Dashboard sheet
+
+WHEN TO USE:
+  - If values seem stale or incorrect
+  - After bulk changes
+  - Before generating reports
+
+
+================================================================================
+                      8. COMMON TASKS - STEP BY STEP
+================================================================================
+
+8.1 RECORDING A SINGLE PATCH
+----------------------------
+
+Scenario: You just finished patching server "APPSERVER01"
+
+Using Macro (Recommended):
+  1. Open the workbook
+  2. Go to NextDC M1 sheet
+  3. Click on any cell in APPSERVER01's row
+  4. Press Alt+F8
+  5. Select "RecordPatchDate"
+  6. Click Run
+  7. Click Yes to confirm
+  Done!
+
+Manual Method:
+  1. Go to NextDC M1 sheet
+  2. Find APPSERVER01's row
+  3. Scroll right to first empty column after H
+  4. Type today's date: 09/01/2026
+  5. Press Enter
+  Done!
+
+
+8.2 RECORDING MULTIPLE PATCHES (Bulk)
+-------------------------------------
+
+Scenario: You patched 10 servers in tonight's maintenance window
+
+  1. Go to NextDC M1 sheet
+  2. Find the first server you patched
+  3. Hold Ctrl and click on each server's row (column A works well)
+  4. After selecting all 10, press Alt+F8
+  5. Select "QuickPatchMultiple"
+  6. Click Run
+  7. Verify the list shows your 10 servers
+  8. Click Yes
+  Done! All 10 servers updated.
+
+
+8.3 ADDING A NEW SERVER TO THE SYSTEM
+-------------------------------------
+
+Scenario: A new server "NEWAPP01" needs to be added for patching
+
+Step 1 - Add to Master Servers:
+  1. Go to Master Servers sheet
+  2. Scroll to first empty row
+  3. Enter:
+     - A: NEWAPP01
+     - B: (select cluster from dropdown)
+     - C: (select priority from dropdown)
+     - D: (select team from dropdown)
+     - E: Active
+     - F: (optional notes)
+
+Step 2 - Add to Patching Schedule:
+  1. Go to NextDC M1 sheet
+  2. Scroll to first empty row
+  3. In column A, click dropdown and select "NEWAPP01"
+  4. Priority and other fields auto-populate
+  5. Status will show "UNSCHEDULED" until first patch
+
+Step 3 - Record Initial Patch (if already patched):
+  1. Click on the NEWAPP01 row
+  2. Press Alt+F8 > RecordPatchDate > Run
+  3. Status changes to "OK"
+
+
+8.4 CHECKING WHICH SERVERS ARE OVERDUE
+--------------------------------------
+
+Method 1 - Dashboard:
+  1. Go to Dashboard sheet
+  2. Look at "OVERDUE" count in Status Overview
+  3. Check "By Priority" section to see breakdown
+
+Method 2 - Macro:
+  1. Press Alt+F8
+  2. Select "ShowOverdueServers"
+  3. Click Run
+  4. View detailed list with days overdue
+
+Method 3 - Filter in NextDC M1:
+  1. Go to NextDC M1 sheet
+  2. Click column E header (Status)
+  3. Click Filter icon (or Data > Filter)
+  4. Uncheck all except "OVERDUE"
+  5. Only overdue servers shown
+
+
+8.5 CHANGING A SERVER'S PRIORITY
+--------------------------------
+
+Scenario: DBSERVER01 needs to change from Priority 3 to Priority 1
+
+  1. Go to Master Servers sheet
+  2. Find DBSERVER01 row
+  3. Click Priority cell (column C)
+  4. Select "1" from dropdown
+  5. Go to NextDC M1 sheet
+  6. DBSERVER01 now shows Priority 1
+  7. Next Scheduled Date automatically recalculates
+
+
+8.6 GENERATING A REPORT
+-----------------------
+
+Scenario: Weekly report needed for management meeting
+
+  1. Press Alt+F8
+  2. Select "ExportPatchReport"
+  3. Click Run
+  4. Click Yes to confirm
+  5. New "Patch Report" sheet appears
+  6. Review the report
+  7. To print: File > Print
+  8. To save as PDF: File > Save As > PDF format
+
+
+8.7 SENDING PATCH NOTIFICATIONS
+-------------------------------
+
+Scenario: You're about to patch 5 servers and need to notify teams
+
+  1. Go to NextDC M1 sheet
+  2. Select the 5 server rows (Ctrl+Click each)
+  3. Press Alt+F8
+  4. Select "GenerateEmailList"
+  5. Click Run
+  6. Copy the server list from the message box
+  7. Paste into your email template
+  8. Add date/time of maintenance
+  9. Send to appropriate teams
+
+
+================================================================================
+                         9. TROUBLESHOOTING
+================================================================================
+
+9.1 COMMON ISSUES AND SOLUTIONS
+-------------------------------
+
+ISSUE: "Macros are disabled" warning
+SOLUTION:
+  - File > Options > Trust Center > Trust Center Settings
+  - Macro Settings > Enable all macros
+  - Restart Excel
+
+ISSUE: Macro list shows empty when pressing Alt+F8
+SOLUTION:
+  - Macros haven't been imported yet
+  - Follow Section 7.2 to import macros
+  - Or use the .xlsm version of the file
+
+ISSUE: Can't save the file (file is locked)
+SOLUTION:
+  - Another user has the file open
+  - Ask them to close it, OR
+  - Use OneDrive's co-authoring feature
+
+ISSUE: Dropdown shows wrong values (like clusters in priority)
+SOLUTION:
+  - Named range is pointing to wrong cells
+  - Go to Formulas > Name Manager
+  - Check and correct the named range
+
+
+9.2 FORMULA ERRORS
+------------------
+
+#REF! ERROR:
+  - A reference is broken (deleted row/column)
+  - Check if named ranges still exist in Name Manager
+  - May need to recreate the named range
+
+#VALUE! ERROR:
+  - Wrong data type in a cell
+  - Check that dates are formatted as dates
+  - Check that priority is a number
+
+#N/A ERROR:
+  - VLOOKUP can't find the value
+  - Check server name matches exactly in Master Servers
+  - Check for extra spaces in names
+
+CIRCULAR REFERENCE WARNING:
+  - A formula refers to itself
+  - Don't put formulas in patch history columns (I onwards)
+  - Those columns should only contain dates
+
+
+9.3 DROPDOWN ISSUES
+-------------------
+
+DROPDOWN SHOWS WRONG VALUES:
+  1. Go to Formulas > Name Manager
+  2. Find the relevant named range (PriorityList, ClusterList, etc.)
+  3. Click Edit
+  4. Verify it points to the correct cells
+  5. Adjust if needed
+
+DROPDOWN DOESN'T APPEAR:
+  1. Click the cell
+  2. Go to Data > Data Validation
+  3. Check if validation is applied
+  4. If not, add validation with Source: =PriorityList (or relevant name)
+
+
+9.4 MACRO ISSUES
+----------------
+
+MACRO GIVES ERROR "Subscript out of range":
+  - Sheet name doesn't match what macro expects
+  - Check that sheets are named: "NextDC M1", "Master Servers", "Settings"
+
+MACRO DOESN'T RECORD DATE:
+  - Make sure you're on NextDC M1 sheet
+  - Make sure you've selected a valid server row (row 2+)
+  - Check that the server has a name in column A
+
+MACRO RUNS BUT NOTHING HAPPENS:
+  - Enable macros in Trust Center
+  - Check that you selected a row before running
+  - Try running RefreshDashboard to ensure macros work
+
+
+================================================================================
+                            10. APPENDIX
+================================================================================
+
+10.1 NAMED RANGES REFERENCE
+---------------------------
+
+  +------------------+------------------------+---------------------------+
+  | Name             | Location               | Purpose                   |
+  +------------------+------------------------+---------------------------+
+  | PriorityList     | Settings!$A$5:$A$9     | Priority dropdown values  |
+  | PriorityTable    | Settings!$A$5:$D$9     | Priority lookup table     |
+  | ClusterList      | Settings!$A$15:$A$18   | Cluster dropdown values   |
+  | TeamList         | Settings!$A$23:$A$26   | Team dropdown values      |
+  | MasterServerList | Master Servers!$A$5:   | Server name dropdown      |
+  |                  | $A$200                 |                           |
+  +------------------+------------------------+---------------------------+
+
+To view/edit: Formulas > Name Manager
+
+
+10.2 FORMULA REFERENCE
+----------------------
+
+Next Scheduled Date (Column C):
+  =IFERROR(VLOOKUP(B2,PriorityTable,2,FALSE)+D2,"No date")
+  Meaning: Look up priority days, add to last patch date
+
+Last Patch Date (Column D):
+  =IF(COUNT(I2:ZZ2)=0,"No Date",MAX(I2:ZZ2))
+  Meaning: Find the most recent date in patch history
+
+Status (Column E):
+  =IFERROR(IF(OR(B2="",C2="No date"),"UNSCHEDULED",
+    IF(C2<TODAY(),"OVERDUE","OK")),"UNSCHEDULED")
+  Meaning: Calculate status based on due date vs today
+
+Days Until Due (Column F):
+  =IF(AND(ISNUMBER(C2),C2<>0),C2-TODAY(),"N/A")
+  Meaning: Subtract today from due date
+
+
+10.3 KEYBOARD SHORTCUTS
+-----------------------
+
+  +----------------+------------------------------------------+
+  | Shortcut       | Action                                   |
+  +----------------+------------------------------------------+
+  | Alt+F8         | Open Macro dialog                        |
+  | F9             | Recalculate all formulas                 |
+  | Alt+F11        | Open VBA Editor                          |
+  | Ctrl+Home      | Go to cell A1                            |
+  | Ctrl+End       | Go to last used cell                     |
+  | Ctrl+Down      | Jump to end of data in column            |
+  | Ctrl+Shift+L   | Toggle filters                           |
+  | Ctrl+S         | Save workbook                            |
+  | Ctrl+P         | Print                                    |
+  +----------------+------------------------------------------+
+
+
+================================================================================
+                              END OF GUIDE
+================================================================================
+
+Document Version: 2.0
+Last Updated: January 2026
+Author: Infrastructure Team
+
+For questions or updates to this guide, contact your team lead.
+
+================================================================================

@@ -1,0 +1,67 @@
++==============================================================================+
+|                    VSPHERE PATCHING - QUICK REFERENCE CARD                   |
+|                         (Print and keep at your desk)                        |
++==============================================================================+
+
++----------------------------------+-------------------------------------------+
+|  RECORDING A PATCH (Quick)       |  RECORDING MULTIPLE PATCHES               |
++----------------------------------+-------------------------------------------+
+|  1. Go to "NextDC M1" sheet      |  1. Go to "NextDC M1" sheet               |
+|  2. Click the server's row       |  2. Ctrl+Click multiple server rows       |
+|  3. Press Alt+F8                 |  3. Press Alt+F8                          |
+|  4. Select "RecordPatchDate"     |  4. Select "QuickPatchMultiple"           |
+|  5. Click Run > Yes              |  5. Click Run > Yes                       |
++----------------------------------+-------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                            AVAILABLE MACROS (Alt+F8)                         |
++------------------------------------------------------------------------------+
+|  RecordPatchDate      |  Record patch for ONE selected server                |
+|  QuickPatchMultiple   |  Record patch for MULTIPLE selected servers          |
+|  ShowOverdueServers   |  List all servers needing patching                   |
+|  GenerateEmailList    |  Create server list for email notifications          |
+|  ExportPatchReport    |  Generate printable status report                    |
+|  RefreshDashboard     |  Recalculate all data and show dashboard             |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                              STATUS MEANINGS                                 |
++------------------------------------------------------------------------------+
+|  OVERDUE     |  RED     |  Past due date - PATCH NOW                         |
+|  OK          |  GREEN   |  Within schedule - no action needed                |
+|  UNSCHEDULED |  GREY    |  No priority or no patch history                   |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                            PATCHING CYCLES                                   |
++------------------------------------------------------------------------------+
+|  Priority 1 (Critical)  =  30 days   |   Priority 4 (Extended)  =  120 days  |
+|  Priority 2 (Medium)    =  60 days   |   Priority 5 (Long-term) =  180 days  |
+|  Priority 3 (Low/Dev)   =  90 days   |   (Editable in Settings sheet)        |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                               KEY SHEETS                                     |
++------------------------------------------------------------------------------+
+|  Dashboard       |  Overview & status counts (view only)                     |
+|  Settings        |  Configure priorities, clusters, teams                    |
+|  Master Servers  |  Add/edit server details (source of truth)                |
+|  NextDC M1       |  Main patching schedule & history                         |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                          ADDING A NEW SERVER                                 |
++------------------------------------------------------------------------------+
+|  1. Master Servers sheet > Add server with cluster, priority, team, status   |
+|  2. NextDC M1 sheet > Select server from dropdown in column A                |
+|  3. Run RecordPatchDate macro after first patch                              |
++------------------------------------------------------------------------------+
+
++------------------------------------------------------------------------------+
+|                         KEYBOARD SHORTCUTS                                   |
++------------------------------------------------------------------------------+
+|  Alt+F8        |  Open macro list           |  F9      |  Refresh formulas   |
+|  Ctrl+S        |  Save                      |  Alt+F11 |  VBA Editor         |
++------------------------------------------------------------------------------+
+
+                    Full guide: Vsphere_Patching_Complete_User_Guide.txt

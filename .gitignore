@@ -1,0 +1,15 @@
+# Temporary files
+~$*.xlsx
+~$*.xlsm
+*.tmp
+*.bak
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Mac
+.DS_Store
+
+# Old/archive folder
+old/
