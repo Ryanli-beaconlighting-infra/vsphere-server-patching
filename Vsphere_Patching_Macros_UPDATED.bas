@@ -2,7 +2,7 @@ Option Explicit
 
 ' ============================================
 ' VSPHERE SERVER PATCHING AUTOMATION MACROS
-' Updated: January 2026
+' Updated: February 2026
 ' ============================================
 ' COLUMN STRUCTURE (NextDC M1):
 '   A = Server Name
@@ -16,21 +16,49 @@ Option Explicit
 '   I onwards = Patch History
 ' ============================================
 
+' --------------------------------------------------------------------------
+' Module-level constants
+' --------------------------------------------------------------------------
+Private Const TARGET_SHEET_NAME As String = "NextDC M1"
+Private Const MAX_COLUMNS As Long = 500
+
+' --------------------------------------------------------------------------
+' Helper: BackupSheet
+' Creates a timestamped copy of the given worksheet before modifications.
+' --------------------------------------------------------------------------
+Private Sub BackupSheet(ws As Worksheet)
+    Dim backupName As String
+    backupName = ws.Name & "_backup_" & Format(Now, "yyyymmdd_hhnnss")
+    ws.Copy After:=ws
+    ActiveSheet.Name = backupName
+End Sub
+
+' --------------------------------------------------------------------------
+' Helper: GetLastDataRow
+' Returns the last row containing data in column 1 of the given worksheet.
+' --------------------------------------------------------------------------
+Private Function GetLastDataRow(ws As Worksheet) As Long
+    GetLastDataRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
+End Function
+
 Sub RecordPatchDate()
     ' Records today's date as a patch for the selected server
     ' Usage: Select a server row on NextDC M1, then run this macro
 
+    On Error GoTo ErrorHandler
+
     Dim ws As Worksheet
     Dim selectedRow As Long
     Dim nextCol As Long
+    Dim lastCol As Long
     Dim serverName As String
     Dim response As VbMsgBoxResult
 
-    Set ws = ThisWorkbook.Sheets("NextDC M1")
+    Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
 
     ' Check we're on the right sheet
-    If ActiveSheet.Name <> "NextDC M1" Then
-        MsgBox "Please go to the 'NextDC M1' sheet and select a server row first.", vbExclamation, "Wrong Sheet"
+    If ActiveSheet.Name <> TARGET_SHEET_NAME Then
+        MsgBox "Please go to the '" & TARGET_SHEET_NAME & "' sheet and select a server row first.", vbExclamation, "Wrong Sheet"
         Exit Sub
     End If
 
@@ -54,12 +82,23 @@ Sub RecordPatchDate()
                       "Click Yes to confirm.", vbYesNo + vbQuestion, "Confirm Patch Record")
 
     If response = vbYes Then
+        ' Create backup before modifying data
+        BackupSheet ws
+        ' Re-set ws reference since BackupSheet changes ActiveSheet
+        Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
+
         ' Find next empty column starting from I (column 9)
         nextCol = 9
         Do While ws.Cells(selectedRow, nextCol).Value <> ""
             nextCol = nextCol + 1
-            If nextCol > 100 Then Exit Do  ' Safety limit
+            If nextCol > MAX_COLUMNS Then Exit Do  ' Safety limit
         Loop
+
+        ' Warn if approaching column limit
+        lastCol = nextCol
+        If lastCol > MAX_COLUMNS * 0.8 Then
+            MsgBox "Warning: Column count (" & lastCol & ") approaching limit (" & MAX_COLUMNS & "). Consider archiving old data.", vbExclamation
+        End If
 
         ' Record the date
         ws.Cells(selectedRow, nextCol).Value = Date
@@ -69,11 +108,19 @@ Sub RecordPatchDate()
                "Server: " & serverName & vbCrLf & _
                "Date: " & Format(Date, "DD/MM/YYYY"), vbInformation, "Success"
     End If
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in RecordPatchDate: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    Exit Sub
 End Sub
 
 Sub QuickPatchMultiple()
     ' Records today's date for multiple selected servers at once
     ' Usage: Select multiple server rows on NextDC M1, then run this macro
+
+    On Error GoTo ErrorHandler
 
     Dim ws As Worksheet
     Dim rng As Range
@@ -82,13 +129,14 @@ Sub QuickPatchMultiple()
     Dim serverCount As Integer
     Dim response As VbMsgBoxResult
     Dim nextCol As Long
+    Dim lastCol As Long
     Dim serverName As String
 
-    Set ws = ThisWorkbook.Sheets("NextDC M1")
+    Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
 
     ' Check we're on the right sheet
-    If ActiveSheet.Name <> "NextDC M1" Then
-        MsgBox "Please go to the 'NextDC M1' sheet and select server rows first.", vbExclamation, "Wrong Sheet"
+    If ActiveSheet.Name <> TARGET_SHEET_NAME Then
+        MsgBox "Please go to the '" & TARGET_SHEET_NAME & "' sheet and select server rows first.", vbExclamation, "Wrong Sheet"
         Exit Sub
     End If
 
@@ -119,6 +167,11 @@ Sub QuickPatchMultiple()
                       "Click Yes to confirm.", vbYesNo + vbQuestion, "Confirm Bulk Patch")
 
     If response = vbYes Then
+        ' Create backup before modifying data
+        BackupSheet ws
+        ' Re-set ws reference since BackupSheet changes ActiveSheet
+        Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
+
         ' Process each selected row
         For Each cell In rng.Rows
             If cell.Row >= 2 Then
@@ -127,8 +180,14 @@ Sub QuickPatchMultiple()
                     nextCol = 9
                     Do While ws.Cells(cell.Row, nextCol).Value <> ""
                         nextCol = nextCol + 1
-                        If nextCol > 100 Then Exit Do
+                        If nextCol > MAX_COLUMNS Then Exit Do
                     Loop
+
+                    ' Warn if approaching column limit
+                    lastCol = nextCol
+                    If lastCol > MAX_COLUMNS * 0.8 Then
+                        MsgBox "Warning: Column count (" & lastCol & ") approaching limit (" & MAX_COLUMNS & "). Consider archiving old data.", vbExclamation
+                    End If
 
                     ws.Cells(cell.Row, nextCol).Value = Date
                     ws.Cells(cell.Row, nextCol).NumberFormat = "DD/MM/YYYY"
@@ -139,6 +198,12 @@ Sub QuickPatchMultiple()
         MsgBox serverCount & " server(s) updated successfully!" & vbCrLf & vbCrLf & _
                "Date recorded: " & Format(Date, "DD/MM/YYYY"), vbInformation, "Bulk Update Complete"
     End If
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in QuickPatchMultiple: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    Exit Sub
 End Sub
 
 Sub ShowOverdueServers()
@@ -146,8 +211,11 @@ Sub ShowOverdueServers()
     ' Text is automatically copied to clipboard for pasting
     ' Usage: Run from any sheet
 
+    On Error GoTo ErrorHandler
+
     Dim ws As Worksheet
     Dim i As Long
+    Dim lastRow As Long
     Dim overdueList As String
     Dim overdueCount As Integer
     Dim nextDueDate As Variant
@@ -155,13 +223,16 @@ Sub ShowOverdueServers()
     Dim clipboardText As String
     Dim DataObj As Object
 
-    Set ws = ThisWorkbook.Sheets("NextDC M1")
+    Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
 
     overdueList = ""
     overdueCount = 0
 
+    ' Dynamic last row detection
+    lastRow = GetLastDataRow(ws)
+
     ' Scan all servers
-    For i = 2 To 500
+    For i = 2 To lastRow
         If ws.Cells(i, 1).Value <> "" Then
             ' Check Status column (E)
             If ws.Cells(i, 5).Value = "OVERDUE" Then
@@ -194,19 +265,27 @@ Sub ShowOverdueServers()
         DataObj.SetText clipboardText
         DataObj.PutInClipboard
         Set DataObj = Nothing
-        On Error GoTo 0
+        On Error GoTo ErrorHandler
 
         MsgBox "OVERDUE SERVERS (" & overdueCount & "):" & vbCrLf & vbCrLf & _
                overdueList & vbCrLf & _
                ">>> TEXT COPIED TO CLIPBOARD - Press Ctrl+V to paste <<<", _
                vbExclamation, "Overdue Servers Found"
     End If
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in ShowOverdueServers: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    Exit Sub
 End Sub
 
 Sub GenerateEmailList()
     ' Creates a list of selected servers for email notification
     ' Text is automatically copied to clipboard for pasting
     ' Usage: Select server rows on NextDC M1, then run this macro
+
+    On Error GoTo ErrorHandler
 
     Dim ws As Worksheet
     Dim masterSheet As Worksheet
@@ -216,19 +295,20 @@ Sub GenerateEmailList()
     Dim serverName As String
     Dim serverCount As Integer
     Dim i As Long
+    Dim lastRow As Long
     Dim team As String
     Dim teamList As String
     Dim clipboardText As String
     Dim DataObj As Object
 
-    Set ws = ThisWorkbook.Sheets("NextDC M1")
+    Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
 
     On Error Resume Next
     Set masterSheet = ThisWorkbook.Sheets("Master Servers")
-    On Error GoTo 0
+    On Error GoTo ErrorHandler
 
-    If ActiveSheet.Name <> "NextDC M1" Then
-        MsgBox "Please go to the 'NextDC M1' sheet and select server rows first.", vbExclamation, "Wrong Sheet"
+    If ActiveSheet.Name <> TARGET_SHEET_NAME Then
+        MsgBox "Please go to the '" & TARGET_SHEET_NAME & "' sheet and select server rows first.", vbExclamation, "Wrong Sheet"
         Exit Sub
     End If
 
@@ -245,9 +325,10 @@ Sub GenerateEmailList()
                 serverCount = serverCount + 1
                 serverList = serverList & "  - " & serverName & vbCrLf
 
-                ' Try to get team from Master Servers
+                ' Try to get team from Master Servers (dynamic last row)
                 If Not masterSheet Is Nothing Then
-                    For i = 5 To 300
+                    lastRow = GetLastDataRow(masterSheet)
+                    For i = 5 To lastRow
                         If masterSheet.Cells(i, 1).Value = serverName Then
                             team = masterSheet.Cells(i, 4).Value
                             If team <> "" Then
@@ -288,26 +369,35 @@ Sub GenerateEmailList()
     DataObj.SetText clipboardText
     DataObj.PutInClipboard
     Set DataObj = Nothing
-    On Error GoTo 0
+    On Error GoTo ErrorHandler
 
     ' Display with clipboard confirmation
     MsgBox msg & vbCrLf & vbCrLf & _
            ">>> TEXT COPIED TO CLIPBOARD - Press Ctrl+V to paste <<<", _
            vbInformation, "Server List for Email"
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in GenerateEmailList: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    Exit Sub
 End Sub
 
 Sub ExportPatchReport()
     ' Generates a printable patch status report on a new sheet
     ' Usage: Run from any sheet
 
+    On Error GoTo ErrorHandler
+
     Dim ws As Worksheet
     Dim reportSheet As Worksheet
     Dim i As Long
+    Dim lastRow As Long
     Dim reportRow As Long
     Dim response As VbMsgBoxResult
     Dim statusValue As String
 
-    Set ws = ThisWorkbook.Sheets("NextDC M1")
+    Set ws = ThisWorkbook.Sheets(TARGET_SHEET_NAME)
 
     response = MsgBox("This will create a new 'Patch Report' sheet with the current patching status." & vbCrLf & vbCrLf & _
                       "Any existing report will be replaced." & vbCrLf & vbCrLf & _
@@ -320,7 +410,7 @@ Sub ExportPatchReport()
     Application.DisplayAlerts = False
     ThisWorkbook.Sheets("Patch Report").Delete
     Application.DisplayAlerts = True
-    On Error GoTo 0
+    On Error GoTo ErrorHandler
 
     ' Create new report sheet
     Set reportSheet = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
@@ -349,9 +439,12 @@ Sub ExportPatchReport()
         reportSheet.Cells(4, i).Font.Color = RGB(255, 255, 255)
     Next i
 
+    ' Dynamic last row detection
+    lastRow = GetLastDataRow(ws)
+
     ' Data rows
     reportRow = 5
-    For i = 2 To 500
+    For i = 2 To lastRow
         If ws.Cells(i, 1).Value <> "" Then
             reportSheet.Cells(reportRow, 1) = ws.Cells(i, 1).Value  ' Server Name (A)
             reportSheet.Cells(reportRow, 2) = ws.Cells(i, 2).Value  ' Priority (B)
@@ -396,14 +489,30 @@ Sub ExportPatchReport()
 
     MsgBox "Patch report generated successfully!" & vbCrLf & vbCrLf & _
            "The report is ready to print or export.", vbInformation, "Report Complete"
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in ExportPatchReport: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    ' Clean up display alerts if error occurred during sheet deletion
+    Application.DisplayAlerts = True
+    Exit Sub
 End Sub
 
 Sub RefreshDashboard()
     ' Recalculates all formulas and shows the Dashboard
     ' Usage: Run from any sheet
 
+    On Error GoTo ErrorHandler
+
     Application.Calculate
     ThisWorkbook.Sheets("Dashboard").Activate
     MsgBox "Dashboard refreshed!" & vbCrLf & vbCrLf & _
            "All formulas have been recalculated.", vbInformation, "Refresh Complete"
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in RefreshDashboard: " & Err.Description & " (Error " & Err.Number & ")", vbCritical
+    Exit Sub
 End Sub
